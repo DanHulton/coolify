@@ -1,3 +1,8 @@
+# documentation: https://forgejo.org/docs/latest/
+# slogan: Forgejo is a self-hosted lightweight software forge.
+# tags: version control, collaboration, code, hosting, lightweight, postgres
+# port: 3000
+
 services:
   forgejo:
     image: 'codeberg.org/forgejo/forgejo:7'
@@ -6,32 +11,33 @@ services:
       - USER_UID=1000
       - USER_GID=1000
       - FORGEJO__database__DB_TYPE=postgres
-      - FORGEJO__database__HOST=postgresql
-      - 'FORGEJO__database__NAME=${POSTGRESQL_DATABASE}'
+      - FORGEJO__database__HOST=postgres
+      - 'FORGEJO__database__NAME=${POSTGRESQL_DATABASE:-forgejo}'
       - 'FORGEJO__database__USER=${SERVICE_USER_POSTGRESQL}'
       - 'FORGEJO__database__PASSWD=${SERVICE_PASSWORD_POSTGRESQL}'
+      # - 'FORGEJO__server__DOMAIN=${DOMAIN_FORGEJO}'
     volumes:
       - './forgejo:/data'
       - '/etc/timezone:/etc/timezone:ro'
       - '/etc/localtime:/etc/localtime:ro'
-    ports:
-      - '22222:22'
     depends_on:
-      postgresql:
+      postgres:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 2s
       timeout: 10s
       retries: 15
-  postgresql:
+    ports:
+      - "3000:3000"
+  postgres:
     image: 'postgres:16-alpine'
     volumes:
       - 'forgejo-postgresql-data:/var/lib/postgresql/data'
     environment:
       - 'POSTGRES_USER=${SERVICE_USER_POSTGRESQL}'
       - 'POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRESQL}'
-      - 'POSTGRES_DB=${POSTGRESQL_DATABASE}'
+      - 'POSTGRES_DB=${POSTGRESQL_DATABASE:-forgejo}'
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
