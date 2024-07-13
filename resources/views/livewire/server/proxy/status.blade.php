@@ -1,6 +1,10 @@
-<div>
-    @if ($server->isFunctional())
-        <div class="flex gap-2" wire:poll.5000ms='checkProxy'>
+<div x-init="$wire.checkProxy()">
+    @if (
+        $server->proxyType() !== 'NONE' &&
+            $server->isFunctional() &&
+            !$server->isSwarmWorker() &&
+            !$server->settings->is_build_server)
+        <div class="flex gap-2">
             @if (data_get($server, 'proxy.status') === 'running')
                 <x-status.running status="Proxy Running" />
             @elseif (data_get($server, 'proxy.status') === 'restarting')

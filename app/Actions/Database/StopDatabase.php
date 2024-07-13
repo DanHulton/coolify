@@ -2,6 +2,9 @@
 
 namespace App\Actions\Database;
 
+use App\Models\StandaloneClickhouse;
+use App\Models\StandaloneDragonfly;
+use App\Models\StandaloneKeydb;
 use App\Models\StandaloneMariadb;
 use App\Models\StandaloneMongodb;
 use App\Models\StandaloneMysql;
@@ -13,9 +16,12 @@ class StopDatabase
 {
     use AsAction;
 
-    public function handle(StandaloneRedis|StandalonePostgresql|StandaloneMongodb|StandaloneMysql|StandaloneMariadb $database)
+    public function handle(StandaloneRedis|StandalonePostgresql|StandaloneMongodb|StandaloneMysql|StandaloneMariadb|StandaloneKeydb|StandaloneDragonfly|StandaloneClickhouse $database)
     {
         $server = $database->destination->server;
+        if (! $server->isFunctional()) {
+            return 'Server is not functional';
+        }
         instant_remote_process(
             ["docker rm -f {$database->uuid}"],
             $server
@@ -23,7 +29,5 @@ class StopDatabase
         if ($database->is_public) {
             StopDatabaseProxy::run($database);
         }
-        // TODO: make notification for services
-        // $database->environment->project->team->notify(new StatusChanged($database));
     }
 }

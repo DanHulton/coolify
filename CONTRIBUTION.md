@@ -22,8 +22,6 @@ You can ask for guidance anytime on our
 - Run `spin up` - You can notice that errors will be thrown. Don't worry.
   - If you see weird permission errors, especially on Mac, run `sudo spin up` instead. 
 
-- Run `./scripts/run setup:dev` - This will generate a secret key for you, delete any existing database layouts, migrate database to the new layout, and seed your database.
-
 ### 4) Start development
 You can login your Coolify instance at `localhost:8000` with `test@example.com` and `password`.
 
@@ -31,7 +29,6 @@ Your horizon (Laravel scheduler): `localhost:8000/horizon` - Only reachable if y
 
 Mails are caught by Mailpit: `localhost:8025`
 
-
 ## New Service Contribution
-Check out the docs [here](https://coolify.io/docs/how-to-add-a-service).
+Check out the docs [here](https://coolify.io/docs/knowledge-base/add-a-service).
 

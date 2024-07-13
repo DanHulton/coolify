@@ -1,6 +1,7 @@
 # documentation: https://docs.nextcloud.com
 # slogan: NextCloud is a self-hosted, open-source platform that provides file storage, collaboration, and communication tools for seamless data management.
 # tags: cloud, collaboration, communication, filestorage, data
+# logo: svgs/nextcloud.svg
 
 services:
   nextcloud:
@@ -14,7 +15,7 @@ services:
       - nextcloud-config:/config
       - nextcloud-data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:80"]
       interval: 2s
       timeout: 10s
       retries: 15

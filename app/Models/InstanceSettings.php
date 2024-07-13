@@ -13,9 +13,11 @@ class InstanceSettings extends Model implements SendsEmail
     use Notifiable;
 
     protected $guarded = [];
+
     protected $casts = [
         'resale_license' => 'encrypted',
         'smtp_password' => 'encrypted',
+        'allowed_ip_ranges' => 'array',
     ];
 
     public function fqdn(): Attribute
@@ -25,11 +27,13 @@ class InstanceSettings extends Model implements SendsEmail
                 if ($value) {
                     $url = Url::fromString($value);
                     $host = $url->getHost();
-                    return $url->getScheme() . '://' . $host;
+
+                    return $url->getScheme().'://'.$host;
                 }
             }
         );
     }
+
     public static function get()
     {
         return InstanceSettings::findOrFail(0);
@@ -41,6 +45,17 @@ class InstanceSettings extends Model implements SendsEmail
         if (is_null($recipients) || $recipients === '') {
             return [];
         }
+
         return explode(',', $recipients);
+    }
+
+    public function getTitleDisplayName(): string
+    {
+        $instanceName = $this->instance_name;
+        if (! $instanceName) {
+            return '';
+        }
+
+        return "[{$instanceName}]";
     }
 }

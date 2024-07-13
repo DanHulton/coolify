@@ -1,15 +1,13 @@
 <div>
-    <x-modal modalId="installDocker">
-        <x-slot:modalBody>
-            <livewire:activity-monitor header="Docker Installation Logs" />
-        </x-slot:modalBody>
-        <x-slot:modalSubmit>
-            <x-forms.button onclick="installDocker.close()" type="submit">
-                Close
-            </x-forms.button>
-        </x-slot:modalSubmit>
-    </x-modal>
+    <x-slot:title>
+        {{ data_get_str($server, 'name')->limit(10) }} > Server Configurations | Coolify
+    </x-slot>
     <x-server.navbar :server="$server" :parameters="$parameters" />
     <livewire:server.form :server="$server" />
+    @if ($server->isFunctional() && $server->isMetricsEnabled())
+        <div class="pt-10">
+            <livewire:server.charts :server="$server" />
+        </div>
+    @endif
     <livewire:server.delete :server="$server" />
 </div>

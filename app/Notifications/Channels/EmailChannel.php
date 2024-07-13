@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Mail\Message;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Mail;
-use Log;
 
 class EmailChannel
 {
@@ -14,8 +13,8 @@ class EmailChannel
     {
         try {
             $this->bootConfigs($notifiable);
-            $recepients = $notifiable->getRecepients($notification);
-            if (count($recepients) === 0) {
+            $recipients = $notifiable->getRecepients($notification);
+            if (count($recipients) === 0) {
                 throw new Exception('No email recipients found');
             }
 
@@ -24,9 +23,9 @@ class EmailChannel
                 [],
                 [],
                 fn (Message $message) => $message
-                    ->to($recepients)
+                    ->to($recipients)
                     ->subject($mailMessage->subject)
-                    ->html((string)$mailMessage->render())
+                    ->html((string) $mailMessage->render())
             );
         } catch (Exception $e) {
             $error = $e->getMessage();
@@ -35,8 +34,8 @@ class EmailChannel
             }
             ray($e->getMessage());
             $message = "EmailChannel error: {$e->getMessage()}. Failed to send email to:";
-            if (isset($recepients)) {
-                $message .= implode(', ', $recepients);
+            if (isset($recipients)) {
+                $message .= implode(', ', $recipients);
             }
             if (isset($mailMessage)) {
                 $message .= " with subject: {$mailMessage->subject}";
@@ -50,9 +49,10 @@ class EmailChannel
     {
         if (data_get($notifiable, 'use_instance_email_settings')) {
             $type = set_transanctional_email_settings();
-            if (!$type) {
+            if (! $type) {
                 throw new Exception('No email settings found.');
             }
+
             return;
         }
         config()->set('mail.from.address', data_get($notifiable, 'smtp_from_address', 'test@example.com'));
@@ -64,14 +64,14 @@ class EmailChannel
         if (data_get($notifiable, 'smtp_enabled')) {
             config()->set('mail.default', 'smtp');
             config()->set('mail.mailers.smtp', [
-                "transport" => "smtp",
-                "host" => data_get($notifiable, 'smtp_host'),
-                "port" => data_get($notifiable, 'smtp_port'),
-                "encryption" => data_get($notifiable, 'smtp_encryption'),
-                "username" => data_get($notifiable, 'smtp_username'),
-                "password" => data_get($notifiable, 'smtp_password'),
-                "timeout" => data_get($notifiable, 'smtp_timeout'),
-                "local_domain" => null,
+                'transport' => 'smtp',
+                'host' => data_get($notifiable, 'smtp_host'),
+                'port' => data_get($notifiable, 'smtp_port'),
+                'encryption' => data_get($notifiable, 'smtp_encryption'),
+                'username' => data_get($notifiable, 'smtp_username'),
+                'password' => data_get($notifiable, 'smtp_password'),
+                'timeout' => data_get($notifiable, 'smtp_timeout'),
+                'local_domain' => null,
             ]);
         }
     }

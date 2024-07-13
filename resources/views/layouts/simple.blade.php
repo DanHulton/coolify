@@ -1,7 +1,8 @@
 @extends('layouts.base')
 @section('body')
-    @parent
-    <main>
+    @livewireScripts
+    <main class="h-full bg-gray-50 dark:bg-base">
         {{ $slot }}
     </main>
+    @parent
 @endsection

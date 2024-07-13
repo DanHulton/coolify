@@ -26,7 +26,6 @@ class ServicesGenerate extends Command
      */
     public function handle()
     {
-        // ray()->clearAll();
         $files = array_diff(scandir(base_path('templates/compose')), ['.', '..']);
         $files = array_filter($files, function ($file) {
             return strpos($file, '.yaml') !== false;
@@ -40,7 +39,7 @@ class ServicesGenerate extends Command
                 $serviceTemplatesJson[$name] = $parsed;
             }
         }
-        $serviceTemplatesJson = json_encode($serviceTemplatesJson, JSON_PRETTY_PRINT);
+        $serviceTemplatesJson = json_encode($serviceTemplatesJson);
         file_put_contents(base_path('templates/service-templates.json'), $serviceTemplatesJson);
     }
 
@@ -51,18 +50,20 @@ class ServicesGenerate extends Command
         // $this->info($content);
         $ignore = collect(preg_grep('/^# ignore:/', explode("\n", $content)))->values();
         if ($ignore->count() > 0) {
-            $ignore = (bool)str($ignore[0])->after('# ignore:')->trim()->value();
+            $ignore = (bool) str($ignore[0])->after('# ignore:')->trim()->value();
         } else {
             $ignore = false;
         }
         if ($ignore) {
             $this->info("Ignoring $file");
+
             return;
         }
         $this->info("Processing $file");
         $documentation = collect(preg_grep('/^# documentation:/', explode("\n", $content)))->values();
         if ($documentation->count() > 0) {
             $documentation = str($documentation[0])->after('# documentation:')->trim()->value();
+            $documentation = str($documentation)->append('?utm_source=coolify.io');
         } else {
             $documentation = 'https://coolify.io/docs';
         }
@@ -72,6 +73,18 @@ class ServicesGenerate extends Command
             $slogan = str($slogan[0])->after('# slogan:')->trim()->value();
         } else {
             $slogan = str($file)->headline()->value();
+        }
+        $logo = collect(preg_grep('/^# logo:/', explode("\n", $content)))->values();
+        if ($logo->count() > 0) {
+            $logo = str($logo[0])->after('# logo:')->trim()->value();
+        } else {
+            $logo = 'svgs/unknown.svg';
+        }
+        $minversion = collect(preg_grep('/^# minversion:/', explode("\n", $content)))->values();
+        if ($minversion->count() > 0) {
+            $minversion = str($minversion[0])->after('# minversion:')->trim()->value();
+        } else {
+            $minversion = '0.0.0';
         }
         $env_file = collect(preg_grep('/^# env_file:/', explode("\n", $content)))->values();
         if ($env_file->count() > 0) {
@@ -88,6 +101,12 @@ class ServicesGenerate extends Command
         } else {
             $tags = null;
         }
+        $port = collect(preg_grep('/^# port:/', explode("\n", $content)))->values();
+        if ($port->count() > 0) {
+            $port = str($port[0])->after('# port:')->trim()->value();
+        } else {
+            $port = null;
+        }
         $json = Yaml::parse($content);
         $yaml = base64_encode(Yaml::dump($json, 10, 2));
         $payload = [
@@ -96,12 +115,18 @@ class ServicesGenerate extends Command
             'slogan' => $slogan,
             'compose' => $yaml,
             'tags' => $tags,
+            'logo' => $logo,
+            'minversion' => $minversion,
         ];
+        if ($port) {
+            $payload['port'] = $port;
+        }
         if ($env_file) {
             $env_file_content = file_get_contents(base_path("templates/compose/$env_file"));
             $env_file_base64 = base64_encode($env_file_content);
             $payload['envs'] = $env_file_base64;
         }
+
         return $payload;
     }
 }
